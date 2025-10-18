@@ -1,0 +1,8 @@
+# Main library for downloading data from Yahoo Finance
+yfinance
+
+# Library for data manipulation, used directly (pd.to_datetime, pd.Timedelta)
+pandas
+
+# yfinance and pandas rely on numpy
+numpy
