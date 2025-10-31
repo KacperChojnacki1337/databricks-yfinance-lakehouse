@@ -6,3 +6,6 @@ pandas
 
 # yfinance and pandas rely on numpy
 numpy
+
+#yaml config
+pyyaml
