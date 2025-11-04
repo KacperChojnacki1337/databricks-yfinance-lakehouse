@@ -1,4 +1,4 @@
-# databricks.yml
+--- 
 
 bundle:
   name: yfinance-bronze-layer 
@@ -12,22 +12,20 @@ resources:
           notebook_task:
             notebook_path: ./notebooks/01_bronze/Yfinance download
             parameters:
-              env_name: ${var.env} # To jest kluczowa zmienna!
+              env_name: ${var.env} 
           timeout_seconds: 3600
 
----
-# Definicja środowisk wdrożenia
-targets:
-  # Konfiguracja środowiska TEST
-  TEST:
-    host: ${{secrets.DATABRICKS_HOST}}      # Używamy TEGO SAMEGO hosta
-    token: ${{secrets.DATABRICKS_TOKEN}}    # Używamy TEGO SAMEGO tokenu
-    variables:
-      env: TEST # Różnica JEST w tej zmiennej
+--- 
 
-  # Konfiguracja środowiska PROD
-  PROD:
-    host: ${{secrets.DATABRICKS_HOST}}      # Używamy TEGO SAMEGO hosta
-    token: ${{secrets.DATABRICKS_TOKEN}}    # Używamy TEGO SAMEGO tokenu
+targets:
+  TEST:
+    host: ${{secrets.DATABRICKS_HOST}}
+    token: ${{secrets.DATABRICKS_TOKEN}}
     variables:
-      env: PROD # Różnica JEST w tej zmiennej
+      env: TEST
+
+  PROD:
+    host: ${{secrets.DATABRICKS_HOST}}
+    token: ${{secrets.DATABRICKS_TOKEN}}
+    variables:
+      env: PROD
