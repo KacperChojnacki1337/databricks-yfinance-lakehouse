@@ -1,4 +1,3 @@
-
 bundle:
   name: yfinance-bronze-layer 
 
@@ -10,21 +9,22 @@ resources:
         - task_key: bronze_task
           notebook_task:
             notebook_path: ./notebooks/01_bronze/Yfinance download
-            parameters:
-              env_name: ${var.env} 
+       
+          parameters: 
+            env_name: ${var.env} 
           timeout_seconds: 3600
-
-
 
 targets:
   TEST:
-    host: ${{secrets.DATABRICKS_HOST}}
-    token: ${{secrets.DATABRICKS_TOKEN}}
+
+    workspace:
+      host: ${{secrets.DATABRICKS_HOST}}
+
     variables:
       env: TEST
 
   PROD:
-    host: ${{secrets.DATABRICKS_HOST}}
-    token: ${{secrets.DATABRICKS_TOKEN}}
+    workspace:
+      host: ${{secrets.DATABRICKS_HOST}}
     variables:
       env: PROD
