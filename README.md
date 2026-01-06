@@ -1,21 +1,46 @@
 
-# Databricks YFinance Lakehouse
+# Databricks YFinance Lakehouse (WSE Market Analysis)
 
 ## 📌 Project Purpose
-This project implements the **Medallion Lakehouse architecture** (Bronze → Silver → Gold) in the **Databricks environment** using **Delta Lake** to process historical financial data from the Warsaw Stock Exchange (WSE). Data is retrieved via the `yfinance` library.
+This project implements a Medallion Lakehouse architecture (Bronze → Silver → Gold) in Databricks using Delta Lake to process historical financial data from the Warsaw Stock Exchange (WSE).
 
-The goal is to provide a clean, optimized, and query-ready dataset for analytics and reporting.
+Unlike standard ETL pipelines, this project includes a Quality Gate System designed to detect and handle financial data anomalies (e.g., unadjusted stock splits/resplits) common in providers like Yahoo Finance.
 
 ---
 
-## 🏗 Architecture
-- **Bronze**: Raw data ingested from `yfinance` (all GPW tickers).
-- **Silver**: Cleaned and validated data with enforced schema.
-- **Gold**: Aggregated and business-ready tables for analytics.
+##🏗 Architecture & Data Flow
 
-> Planned additions: Data Quality checks (freshness, schema validation) and CI integration.
+####Bronze (Raw):
+
+Raw ingestion from yfinance API.
+
+Format: Delta Lake (Append only).
 
 
+####Silver (Refined):
+
+Schema enforcement and type optimization (Float/Integer).
+
+Feature Engineering: SMA (20, 50, 200), Daily Returns, Time Dimensions.
+
+Quality Gate: Intelligent SMA check (handles new IPOs) and anomaly detection (>1000% return alerts).
+
+####Gold (Curated):
+
+Business-ready Monthly Aggregations.
+
+Outlier Filtering: Automatic removal of technical data errors (e.g., Atlantis SA resplit errors).
+
+Delta Constraints: Enforced month ranges and non-null tickets.
+
+##🛡️ Data Quality & Monitoring (Latest Features)
+The project features a custom logging and testing framework:
+
+Execution Logs: Every run (STARTED/SUCCESS/FAILED) is logged into a dedicated Delta table with detailed error messages.
+
+Anomaly Reporting: Technical data glitches (like the 2700% jump in Atlantis SA) are detected in the Silver layer and logged as warnings instead of breaking the pipeline.
+
+Maintenance: Automated OPTIMIZE (Z-ORDER) and VACUUM processes for storage performance and cost-efficiency in Databricks.
 ## ⚙️ Technologies
 - Databricks Free Edition
 - Delta Lake
@@ -42,18 +67,16 @@ The goal is to provide a clean, optimized, and query-ready dataset for analytics
 
 > **Note:** This project is designed for **Databricks Free Edition**. No automated CD (Continuous Deployment) is included due to platform limitations.
 
----
+##📊 Sample Monitoring Query
+You can monitor the health of your pipeline using SQL directly in Databricks:
 
-## ✅ Current Features
-- Medallion architecture (Bronze → Silver → Gold).
-- Delta Lake tables for ACID transactions and time travel.
-- GitHub CI (planned: lint, tests, Data Quality report).
+SQL
 
----
+SELECT * 
+FROM delta.`/Volumes/workspace/test_schema/yfinance_test_data/gold_execution_logs`
 
-## 🔮 Future Enhancements
-- Data Quality checks (schema, freshness, duplicates).
-- Monitoring and pipeline health metrics.
+//change paths//
+
 
 
 
