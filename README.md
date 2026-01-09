@@ -10,6 +10,12 @@ Unlike standard ETL pipelines, this project includes a Quality Gate System desig
 
 ##🏗 Architecture & Data Flow
 
+####Data Sourcing (External):
+
+stooq_scraper.py: A Selenium-based scraper that fetches the latest WSE tickers.
+
+Google Drive API: Automatically updates a centralized gpw_tickets.csv file (Master Data).
+
 ####Bronze (Raw):
 
 Raw ingestion from yfinance API.
@@ -58,12 +64,13 @@ Maintenance: Automated OPTIMIZE (Z-ORDER) and VACUUM processes for storage perfo
 
 ## 🚀 How to Run
 1. Clone this repository.
-2. Import notebooks into **Databricks**.
-3. Configure paths in `config/` for Bronze, Silver, and Gold layers.
-4. Run notebooks in the following order:
-   - `notebooks/bronze_ingest`
-   - `notebooks/silver_transform`
-   - `notebooks/gold_aggregate`
+2. Ticker Update: Run scrapers/gdrive_scraper.py locally to refresh the ticker list on your Google Drive (requires credentials.json).
+3. Databricks Setup: Import notebooks from the notebooks/ folder and configure config/config.yaml.
+4. Run Pipeline: Execute notebooks in order:
+
+- 01_bronze_ingest
+- 02_silver_transform
+- 03_gold_aggregate
 
 > **Note:** This project is designed for **Databricks Free Edition**. No automated CD (Continuous Deployment) is included due to platform limitations.
 
@@ -72,11 +79,7 @@ You can monitor the health of your pipeline using SQL directly in Databricks:
 
 SQL
 
-SELECT * 
-FROM delta.`/Volumes/workspace/test_schema/yfinance_test_data/gold_execution_logs`
-
-//change paths//
-
-
-
-
+SELECT timestamp, task_name, status, message 
+FROM delta.`/Volumes/{catalog}/{schema}/{volume}/gold_execution_logs`
+ORDER BY timestamp DESC
+LIMIT 20;
