@@ -1,58 +1,48 @@
 
-# Databricks YFinance Lakehouse (WSE Market Analysis)
+# Databricks Financial Lakehouse (WSE Analysis)
+End-to-End Medallion Pipeline with Automated Orchestration & Quality Gates
 
 ## 📌 Project Purpose
-This project implements a Medallion Lakehouse architecture (Bronze → Silver → Gold) in Databricks using Delta Lake to process historical financial data from the Warsaw Stock Exchange (WSE).
+This project implements a complete Medallion Architecture (Bronze → Silver → Gold) within Databricks to process and analyze Warsaw Stock Exchange (WSE) data.
 
-Unlike standard ETL pipelines, this project includes a Quality Gate System designed to detect and handle financial data anomalies (e.g., unadjusted stock splits/resplits) common in providers like Yahoo Finance.
+What makes this project unique:
+
+- Automated Metadata Management: Syncs ticker lists from Google Drive to Databricks SQL.
+- Hybrid Orchestration: Managed via Databricks Workflows with cross-task dependencies.
+- Professional Testing Framework: Modular validation logic stored in .py modules and imported into Spark notebooks – simulating production-grade CI/CD patterns.
 
 ---
 
-##🏗 Architecture & Data Flow
+##🏗 Architecture & Orchestration
 
-####Data Sourcing (External):
+#### 1. Data Ingestion & Metadata Sync
+- External Ingestion: A local Selenium-based scraper updates a Master Ticker List on Google Drive.
+- 00_METADATA_SYNC: This notebook acts as the Control Plane. It fetches the CSV, validates its integrity via tests/meta_tests.py, and synchronizes the Databricks SQL metadata table.
 
-stooq_scraper.py: A Selenium-based scraper that fetches the latest WSE tickers.
+#### 2. The Medallion Pipeline
+- Bronze (Raw): Incremental ingestion from yfinance API. Uses Delta Merge to ensure idempotency.
+- Silver (Refined): Schema enforcement, type optimization, and Feature Engineering (SMA 20/50/200, Daily Returns).
+- Gold (Curated): Business-ready aggregations and monthly performance metrics.
 
-Google Drive API: Automatically updates a centralized gpw_tickets.csv file (Master Data).
-
-####Bronze (Raw):
-
-Raw ingestion from yfinance API.
-
-Format: Delta Lake (Append only).
+#### 3. Workflow Orchestration
+The entire pipeline is orchestrated using Databricks Workflows. The graph ensures that data only flows to the next layer if the previous one succeeded and passed its Quality Gates.
 
 
-####Silver (Refined):
+##🛡️ Reliability & Testing (CI/CD Approach)
+Unlike simple scripts, this project uses a Modular Testing Framework:
 
-Schema enforcement and type optimization (Float/Integer).
+- Decoupled Validation: Quality checks are stored in the /tests directory as Python modules.
+- Quality Gates: Every layer (Meta, Bronze, Silver, Gold) imports these modules to perform Run-time Data Validation.
+- CI-Ready Design: The separation of logic into .py files allows for easy integration with GitLab CI/CD / GitHub Actions for automated Unit Testing using mock data.
+- Automated Logging: A custom logging framework records STARTED / SUCCESS / FAILED statuses into Delta Tables for full auditability.
 
-Feature Engineering: SMA (20, 50, 200), Daily Returns, Time Dimensions.
-
-Quality Gate: Intelligent SMA check (handles new IPOs) and anomaly detection (>1000% return alerts).
-
-####Gold (Curated):
-
-Business-ready Monthly Aggregations.
-
-Outlier Filtering: Automatic removal of technical data errors (e.g., Atlantis SA resplit errors).
-
-Delta Constraints: Enforced month ranges and non-null tickets.
-
-##🛡️ Data Quality & Monitoring (Latest Features)
-The project features a custom logging and testing framework:
-
-Execution Logs: Every run (STARTED/SUCCESS/FAILED) is logged into a dedicated Delta table with detailed error messages.
-
-Anomaly Reporting: Technical data glitches (like the 2700% jump in Atlantis SA) are detected in the Silver layer and logged as warnings instead of breaking the pipeline.
-
-Maintenance: Automated OPTIMIZE (Z-ORDER) and VACUUM processes for storage performance and cost-efficiency in Databricks.
-## ⚙️ Technologies
-- Databricks Free Edition
-- Delta Lake
-- PySpark
-- yfinance
-- GitHub Actions (CI)
+## ⚙️ Tech Stack
+- Platform: Databricks (Free Community Edition)
+- Engine: Apache Spark (PySpark)
+- Storage: Delta Lake (Lakehouse)
+- Orchestration: Databricks Workflows (DAG)
+- Language: Python (Modular OOP approach)
+- Version Control: Git / GitHub / Databricks Repos
 
 ---
 
@@ -63,16 +53,15 @@ Maintenance: Automated OPTIMIZE (Z-ORDER) and VACUUM processes for storage perfo
 ---
 
 ## 🚀 How to Run
-1. Clone this repository.
-2. Ticker Update: Run scrapers/gdrive_scraper.py locally to refresh the ticker list on your Google Drive (requires credentials.json).
-3. Databricks Setup: Import notebooks from the notebooks/ folder and configure config/config.yaml.
-4. Run Pipeline: Execute notebooks in order:
+1. Local Setup: Run scrapers/gdrive_scraper.py to refresh the ticker list on your Google Drive.
 
-- 01_bronze_ingest
-- 02_silver_transform
-- 03_gold_aggregate
+2. Databricks Setup: - Connect your GitHub repo to Databricks Repos.
+- Configure config/config.yaml for your environment.
 
-> **Note:** This project is designed for **Databricks Free Edition**. No automated CD (Continuous Deployment) is included due to platform limitations.
+3. Run Pipeline:
+`- Execute the Databricks Workflow (Job) which automates: 00_METADATA_SYNC ➔ 01_BRONZE_INGEST ➔ 02_SILVER_TRANSFORM ➔ 03_GOLD_AGGREGATE.`
+
+
 
 ##📊 Sample Monitoring Query
 You can monitor the health of your pipeline using SQL directly in Databricks:
