@@ -1,17 +1,17 @@
 # config.yaml
 
 PROD:
-  # Ustawienia Unity Catalog dla Produkcji
+  # Unity Catalog Settings for Production
   catalog_name: workspace
   schema_name: default
   volume_name: yfinance_data
-  # Źródło danych SQL
+  # SQL data source
   sql_table_name: google_drive.gpw_data
 
 TEST:
-  # Ustawienia Unity Catalog dla Testów
+  # Unity Catalog Settings for Tests
   catalog_name: workspace
   schema_name: test_schema 
   volume_name: yfinance_test_data
-  # Źródło danych SQL
+  # SQL data source
   sql_table_name: google_drive.gpw_data 
