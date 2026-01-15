@@ -1,0 +1,120 @@
+{
+  "name": "Yfinance-Job-Pipeline-Test",
+  "email_notifications": {
+    "no_alert_for_skipped_runs": false
+  },
+  "webhook_notifications": {},
+  "timeout_seconds": 0,
+  "schedule": {
+    "quartz_cron_expression": "42 33 8 * * ?",
+    "timezone_id": "UTC",
+    "pause_status": "PAUSED"
+  },
+  "max_concurrent_runs": 1,
+  "tasks": [
+    {
+      "task_key": "yfinance-data-bronze-stage-job-test",
+      "depends_on": [
+        {
+          "task_key": "yfinance-metadata-job-test"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "notebooks/01_bronze/bronze_ingest",
+        "source": "GIT"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {
+        "on_failure": [
+          "kmchojnacki17@gmail.com"
+        ]
+      },
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    },
+    {
+      "task_key": "yfinance-data-silver-stage-job-test",
+      "depends_on": [
+        {
+          "task_key": "yfinance-data-bronze-stage-job-test"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "notebooks/02_silver/silver_transform",
+        "source": "GIT"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {
+        "on_failure": [
+          "kmchojnacki17@gmail.com"
+        ]
+      },
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    },
+    {
+      "task_key": "yfinance-data-gold-stage-job-test",
+      "depends_on": [
+        {
+          "task_key": "yfinance-data-silver-stage-job-test"
+        }
+      ],
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "notebooks/03_gold/gold_aggregate",
+        "source": "GIT"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {
+        "on_failure": [
+          "kmchojnacki17@gmail.com"
+        ]
+      },
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    },
+    {
+      "task_key": "yfinance-metadata-job-test",
+      "run_if": "ALL_SUCCESS",
+      "notebook_task": {
+        "notebook_path": "notebooks/00_METADATA_SYNC",
+        "source": "GIT"
+      },
+      "timeout_seconds": 0,
+      "email_notifications": {
+        "on_failure": [
+          "kmchojnacki17@gmail.com"
+        ]
+      },
+      "notification_settings": {
+        "no_alert_for_skipped_runs": false,
+        "no_alert_for_canceled_runs": false,
+        "alert_on_last_attempt": false
+      },
+      "webhook_notifications": {}
+    }
+  ],
+  "git_source": {
+    "git_url": "https://github.com/KacperChojnacki1337/databricks-yfinance-lakehouse",
+    "git_provider": "gitHub",
+    "git_branch": "test"
+  },
+  "queue": {
+    "enabled": true
+  },
+  "performance_target": "PERFORMANCE_OPTIMIZED"
+}
